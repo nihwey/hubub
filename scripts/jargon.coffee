@@ -66,7 +66,7 @@ generateWord = (length) ->
 #       is responding to.
 generatePhrase = (length, userName) ->
   phrase = (generateWord(randInt(1, 7)) for num in [length..1]).join(' ')
-  userName + ' ' + phrase + pickOne(punctuation)
+  '@' + userName + ' ' + phrase + pickOne(punctuation)
 
 
 module.exports = (robot) ->
