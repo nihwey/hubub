@@ -1,22 +1,21 @@
 # Description:
 #   Hubub's language model
 
-
 # -- This is the list of phrases that Hubub listens to.
 triggers = [
-  'hey',
-  'how',
+  '[Hh]ey',
+  '[Hh]i',
+  '[Hh]ow',
   'idea',
-  'say',
+  '[Ss]ay',
   'speak',
+  'talk',
   'think',
-  'what',
-  'why'
+  '[Ww]hat',
+  '[Ww]hy'
 ]
 
-
 # -- Language generation
-
 
 consonants = 'bcdfghjklmnpqrstvwxzbcdghklmnprstvw';
 vowels = 'aeiouyaeiou'
@@ -30,6 +29,8 @@ punctuation = [
   '!!'
 ]
 
+at = (name) ->
+  '@' + name
 
 # Generates a random integer between the given bounds.
 #   {number} min Lower bound integer, inclusive.
@@ -37,12 +38,10 @@ punctuation = [
 randInt = (min, max) ->
   Math.floor(Math.random() * (max - min)) + min
 
-
 # Picks a single item from the given list of options.
 #   {Array} options A list of options.
 pickOne = (options) ->
   options[randInt(0, options.length)]
-
 
 # Generates a single word.
 #   {number} length The length of the word to generate.
@@ -59,15 +58,13 @@ generateWord = (length) ->
       word = (pickOne(alphabet) for num in [length..1]).join('')
   word
 
-
 # Generates a phrase.
 #   {number} length The length of the phrase to generate.
 #   {string} userName The name of the user who sent the message Hubub
 #       is responding to.
 generatePhrase = (length, userName) ->
   phrase = (generateWord(randInt(1, 7)) for num in [length..1]).join(' ')
-  '@' + userName + ' ' + phrase + pickOne(punctuation)
-
+  at(userName) + ' ' + phrase + pickOne(punctuation)
 
 module.exports = (robot) ->
   robot.hear new RegExp(triggers.join('|')), (res) ->
