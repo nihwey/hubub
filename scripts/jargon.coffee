@@ -17,9 +17,19 @@ triggers = [
 
 # -- Language generation
 
-consonants = 'bcdfghjklmnpqrstvwxzbcdghklmnprstvw';
+consonants = 'bcdfghjklmnpqrstvwxzbcdghklmnprstvw'
 vowels = 'aeiouyaeiou'
 alphabet = vowels + vowels + consonants + vowels
+
+specialWords = [
+  'chocolate',
+  'hehe',
+  'laa~',
+  'rice',
+  'sushi',
+  '<3',
+  '>.>'
+]
 
 punctuation = [
   '.', '.',
@@ -43,6 +53,15 @@ randInt = (min, max) ->
 pickOne = (options) ->
   options[randInt(0, options.length)]
 
+# Picks a single item from the given list of options and remove it from the
+# list of options.
+#   {Array} options A list of options.
+pickOneAndRemove = (options) ->
+  i = randInt(0, options.length)
+  chosen = options[i]
+  options[i] = []
+  chosen
+
 # Generates a single word.
 #   {number} length The length of the word to generate.
 generateWord = (length) ->
@@ -63,10 +82,16 @@ generateWord = (length) ->
 #   {string} userName The name of the user who sent the message Hubub
 #       is responding to.
 generatePhrase = (length, userName) ->
-  phrase = (generateWord(randInt(1, 7)) for num in [length..1]).join(' ')
+  specialWordsCopy = specialWords[..]
+  phrase = while length -= 1
+    if Math.round(Math.random() * 8) is 2 and specialWordsCopy.length > 0
+      pickOneAndRemove(specialWordsCopy)
+    else
+      generateWord(randInt(1, 7))
+  phrase = phrase.join(' ')
   at(userName) + ' ' + phrase + pickOne(punctuation)
 
 module.exports = (robot) ->
   robot.hear new RegExp(triggers.join('|')), (res) ->
-    numWords = randInt(1, 5)
+    numWords = randInt(1, 10)
     res.send generatePhrase(numWords, res.envelope.user.name)
