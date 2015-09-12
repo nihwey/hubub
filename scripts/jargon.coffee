@@ -3,6 +3,7 @@
 
 # -- This is the list of phrases that Hubub listens to.
 triggers = [
+  '[Hh]ello',
   '[Hh]ey',
   '[Hh]i',
   '[Hh]ow',
@@ -91,7 +92,19 @@ generatePhrase = (length, userName) ->
   phrase = phrase.join(' ')
   at(userName) + ' ' + phrase + pickOne(punctuation)
 
+
+# -- Response handling
+
 module.exports = (robot) ->
+  # Provide a link to the Broadway Dance Center daily schedule.
+  robot.hear /BDC/i, (res) ->
+    url = 'http://www.broadwaydancecenter.com/schedule/{MONTH}_{DATE}.shtml'
+    today = new Date()
+    res.send url
+        .replace(/{MONTH}/, today.getMonth() + 1)
+        .replace(/{DATE}/, today.getDate())
+
+  # Respond to any other triggers with a random phrase.
   robot.hear new RegExp(triggers.join('|')), (res) ->
     numWords = randInt(1, 10)
     res.send generatePhrase(numWords, res.envelope.user.name)
