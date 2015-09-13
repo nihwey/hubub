@@ -80,9 +80,8 @@ generateWord = (length) ->
 
 # Generates a phrase.
 #   {number} length The length of the phrase to generate.
-#   {string} userName The name of the user who sent the message Hubub
-#       is responding to.
-generatePhrase = (length, userName) ->
+#   {User} user The user who sent the message Hubub is responding to.
+generatePhrase = (length, user) ->
   specialWordsCopy = specialWords[..]
   phrase = while length -= 1
     if Math.round(Math.random() * 8) is 2 and specialWordsCopy.length > 0
@@ -90,7 +89,7 @@ generatePhrase = (length, userName) ->
     else
       generateWord(randInt(1, 7))
   phrase = phrase.join(' ')
-  at(userName) + ' ' + phrase + pickOne(punctuation)
+  at(user.name) + ' ' + phrase + pickOne(punctuation)
 
 
 # -- Response handling
@@ -99,4 +98,4 @@ module.exports = (robot) ->
   # Respond to any of the triggers with a random phrase.
   robot.hear new RegExp(triggers.join('|')), (res) ->
     numWords = randInt(1, 10)
-    res.send generatePhrase(numWords, res.envelope.user.name)
+    res.send generatePhrase(numWords, res.envelope.user)
