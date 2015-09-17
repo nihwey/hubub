@@ -75,7 +75,7 @@ makeEndpointForLocation = (robot, location) ->
 module.exports = (robot) ->
   makeEndpointForLocation(robot, RUMNEY)
 
-  robot.hear /climb( .*)?/i, (res) ->
+  robot.hear /^climb( .*)?/i, (res) ->
     locationMatch =
         if res.match[1]? then res.match[1].trim().toLowerCase() else 'recommend'
 
