@@ -48,11 +48,6 @@ forecastIoWidget =
     'frameborder="0" height="245" width="100%" ' +
     'src="http://forecast.io/embed/#lat={LAT}&lon={LNG}&name={NAME}">' +
     '</iframe>'
-forecastIoPage =
-    '<iframe id="forecast_embed_page" type="text/html" ' +
-    'frameborder="0" width="100%" ' +
-    'src="http://forecast.io/lines/?q={LATLNG}>' +
-    '</iframe>'
 
 # Gets weather recommendation from the forecast.io API.
 #   {Object} location
