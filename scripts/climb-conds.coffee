@@ -6,19 +6,33 @@
 
 # -- Climbing locations
 
+RED_RIVER_GORGE =
+  id: 'rrg',
+  name: 'Red River Gorge',
+  latlng: '37.7842, -83.6824',
+  query: 'slade ky',
+  zip: '40376',
+  accuweatherId: '2194984'
+
 RUMNEY =
   id: 'rumney',
   name: 'Rumney',
   latlng: '43.8021,-71.8367',
   query: 'rumney nh',
-  zip: '03266'
+  zip: '03266',
+  accuweatherId: '2174610'
 
+LOCATIONS = [
+  RED_RIVER_GORGE,
+  RUMNEY
+]
 
 # -- Sources
 
 # AccuWeather.com
 accuweather =
-    'http://www.accuweather.com/en/us/{QUERY}/{ZIP}/{MONTH_NAME}-weather/2174610'
+    'http://www.accuweather.com/en/us/{QUERY}/{ZIP}/{MONTH_NAME}-weather/' +
+    '{ACCUWEATHER_ID}'
 
 # Gets weather recommendation from AccuWeather.
 #   {Object} location
@@ -28,6 +42,7 @@ getAccuWeather = (location) ->
       .replace(/{QUERY}/, location.query.replace(' ', '-'))
       .replace(/{ZIP}/, location.zip)
       .replace(/{MONTH_NAME}/, getReadableMonth(date))
+      .replace(/{ACCUWEATHER_ID}/, location.accuweatherId)
 
 # Weather.com
 weatherCom = 'http://www.weather.com/weather/monthly/l/{ZIP}:4:US'
@@ -54,6 +69,9 @@ forecastIoWidget =
 #   {Object} location
 getForecastIo = (location) ->
   #forecastIoApi.replace(/{LATLNG}/, location.latlng)
+  # NOTE: This is buggy; they seem to persist some amount of data (in cookies?)
+  # so it remembers the first location you went to and always shows that data
+  # no matter the &q.
   forecastIoLines.replace(/{LATLNG}/, location.latlng)
 
 makeLinkElement = (url, linkText) ->
@@ -61,10 +79,9 @@ makeLinkElement = (url, linkText) ->
 
 # Establish a fixed endpoint at /climb/<location_id>
 makeEndpointForLocation = (robot, location) ->
-  @location = location
-  @latlng = location.latlng.split(',')
-
   callback = (req, res) ->
+    [lat, lng] = location.latlng.split(',')
+
     page = '<style>' +
       'a {' +
         'display:inline-block;' +
@@ -74,12 +91,12 @@ makeEndpointForLocation = (robot, location) ->
       '}' +
     '</style>'
     page += forecastIoWidget
-        .replace(/{NAME}/, @location.name)
-        .replace(/{LAT}/, @latlng[0])
-        .replace(/{LNG}/, @latlng[1])
-    page += makeLinkElement(getForecastIo(@location), 'Forecast.io Lines')
-    page += makeLinkElement(getAccuWeather(@location), 'AccuWeather.com')
-    page += makeLinkElement(getWeatherCom(@location), 'Weather.com')
+        .replace(/{NAME}/, location.name)
+        .replace(/{LAT}/, lat)
+        .replace(/{LNG}/, lng)
+    page += makeLinkElement(getForecastIo(location), 'Forecast.io Lines')
+    page += makeLinkElement(getAccuWeather(location), 'AccuWeather.com')
+    page += makeLinkElement(getWeatherCom(location), 'Weather.com')
 
     res.set 'Content-Type', 'text/html'
     res.send page
@@ -92,23 +109,19 @@ makeEndpointForLocation = (robot, location) ->
 # -- Request handling
 
 module.exports = (robot) ->
-  makeEndpointForLocation(robot, RUMNEY)
+  makeEndpointForLocation(robot, location) for location in LOCATIONS
 
   robot.hear /climb( .*)?/i, (res) ->
     locationMatch =
         if res.match[1]? then res.match[1].trim().toLowerCase() else 'any'
 
     switch locationMatch
-      when 'any'
-        #res.send 'Climbing recommendation hasn\'t been implemented yet.'
-        return
       when 'rumney'
         location = RUMNEY
       when 'red river gorge', 'rrg', 'red'
-        #res.send 'Recommendation for this location isn\'t implemented yet.'
-        return
+        location = RED_RIVER_GORGE
       else
-        #res.send 'Unknown location request... try RUMNEY'
+        res.send 'mmm climbing ^___^'
         return
 
     res.send 'http://hubub.herokuapp.com/climb/' + location.id
