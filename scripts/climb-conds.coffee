@@ -7,6 +7,7 @@
 # -- Climbing locations
 
 RUMNEY =
+  id: 'rumney',
   name: 'Rumney',
   latlng: '43.8021,-71.8367',
   query: 'rumney nh',
@@ -34,31 +35,46 @@ weatherCom = 'http://www.weather.com/weather/monthly/l/{ZIP}:4:US'
 # Gets weather recommendation from Weather.com.
 #   {Object} location
 getWeatherCom = (location) ->
-  weatherCom
-      .replace(/{ZIP}/, location.zip)
+  weatherCom.replace(/{ZIP}/, location.zip)
 
  # Forecast.io
 forecastIo =
     'https://api.forecast.io/forecast/30059f5ccc521da2292979482d428572/{LATLNG}'
 
-# Gets weather recommendation from forecast.io.
+forecastIoWidget =
+    '<iframe id="forecast_embed" type="text/html" ' +
+    'frameborder="0" height="245" width="100%" ' +
+    'src="http://forecast.io/embed/#lat={LAT}&lon={LNG}&name={NAME}">' +
+    '</iframe>'
+
+# Gets weather recommendation from the forecast.io API.
 #   {Object} location
 getForecastIo = (location) ->
-  forecastIo
-      .replace(/{LATLNG}/, location.latlng)
+  forecastIo.replace(/{LATLNG}/, location.latlng)
 
+# Establish a fixed endpoint at /climb/<location_id>
+makeEndpointForLocation = (robot, location) ->
+  @name = location.name
+  @lat = location.latlng.split(',')[0]
+  @lng = location.latlng.split(',')[1]
 
-# Gets climbing information for the location from all known sources.
-getClimbingInfo = (res, location) ->
-  res.send 'Fetching climbing conditions for: ' + location.name
-  res.send getAccuWeather(location)
-  res.send getWeatherCom(location)
-  res.send getForecastIo(location)
+  callback = (req, res) ->
+    res.set 'Content-Type', 'text/html'
+    res.send forecastIoWidget
+        .replace(/{NAME}/, @name)
+        .replace(/{LAT}/, @lat)
+        .replace(/{LNG}/, @lng)
+
+  robot.logger.info 'Making endpoint /climb/' + location.id
+  robot.router.post '/climb/' + location.id, callback
+  robot.router.get '/climb/' + location.id, callback
 
 
 # -- Request handling
 
 module.exports = (robot) ->
+  makeEndpointForLocation(robot, RUMNEY)
+
   robot.hear /climb( .*)?/i, (res) ->
     locationMatch =
         if res.match[1]? then res.match[1].trim().toLowerCase() else 'recommend'
@@ -76,7 +92,11 @@ module.exports = (robot) ->
         res.send 'Unknown location request... try RUMNEY'
         return
 
-    getClimbingInfo(res, location)
+    res.send 'Fetching climbing conditions for: ' + location.name
+    res.send getAccuWeather(location)
+    res.send getWeatherCom(location)
+    # TODO: Re-enable when this is ready.
+    #res.send getForecastIo(location)
 
 
 # -- Utilities
