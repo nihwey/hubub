@@ -46,6 +46,7 @@ forecastIoLines = 'http://forecast.io/lines/?q={LATLNG}'
 forecastIoWidget =
     '<iframe id="forecast_embed" type="text/html" ' +
     'frameborder="0" height="245" width="100%" ' +
+    'style="border-bottom:1px solid black" ' +
     'src="http://forecast.io/embed/#lat={LAT}&lon={LNG}&name={NAME}">' +
     '</iframe>'
 
@@ -55,17 +56,33 @@ getForecastIo = (location) ->
   #forecastIoApi.replace(/{LATLNG}/, location.latlng)
   forecastIoLines.replace(/{LATLNG}/, location.latlng)
 
+makeLinkElement = (url, linkText) ->
+  '<a href="' + url + '">' + linkText + '</a>'
+
 # Establish a fixed endpoint at /climb/<location_id>
 makeEndpointForLocation = (robot, location) ->
   @location = location
   @latlng = location.latlng.split(',')
 
   callback = (req, res) ->
-    res.set 'Content-Type', 'text/html'
-    res.send forecastIoWidget
+    page = '<style>' +
+      'a {' +
+        'display:inline-block;' +
+        'font-family: sans-serif;' +
+        'padding: 20px;' +
+        'text-decoration: none;' +
+      '}' +
+    '</style>'
+    page += forecastIoWidget
         .replace(/{NAME}/, @location.name)
         .replace(/{LAT}/, @latlng[0])
         .replace(/{LNG}/, @latlng[1])
+    page += makeLinkElement(getForecastIo(@location), 'Forecast.io Lines')
+    page += makeLinkElement(getAccuWeather(@location), 'AccuWeather.com')
+    page += makeLinkElement(getWeatherCom(@location), 'Weather.com')
+
+    res.set 'Content-Type', 'text/html'
+    res.send page
 
   robot.logger.info 'Making endpoint /climb/' + location.id
   robot.router.post '/climb/' + location.id, callback
