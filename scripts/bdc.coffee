@@ -1,5 +1,8 @@
 # Description:
 #   Provides information about dance classes around NYC.
+#
+# Commands:
+#   bdc - Provides a link to the Broadway Dance Center daily schedule.
 
 module.exports = (robot) ->
   # Provide a link to the Broadway Dance Center daily schedule.

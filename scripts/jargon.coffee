@@ -92,7 +92,7 @@ generatePhrase = (length, user) ->
   at(user.name) + ' ' + phrase + pickOne(punctuation)
 
 
-# -- Response handling
+# -- Request handling
 
 module.exports = (robot) ->
   # Respond to any of the triggers with a random phrase.
