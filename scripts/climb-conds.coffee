@@ -77,21 +77,21 @@ makeEndpointForLocation = (robot, location) ->
 module.exports = (robot) ->
   makeEndpointForLocation(robot, RUMNEY)
 
-  robot.hear /^climb( .*)?/i, (res) ->
+  robot.hear /climb( .*)?/i, (res) ->
     locationMatch =
-        if res.match[1]? then res.match[1].trim().toLowerCase() else 'recommend'
+        if res.match[1]? then res.match[1].trim().toLowerCase() else 'any'
 
     switch locationMatch
+      when 'any'
+        #res.send 'Climbing recommendation hasn\'t been implemented yet.'
+        return
       when 'rumney'
         location = RUMNEY
       when 'red river gorge', 'rrg', 'red'
-        res.send 'Recommendation for this location isn\'t implemented yet.'
-        return
-      when 'recommend'
-        res.send 'Climbing recommendation hasn\'t been implemented yet.'
+        #res.send 'Recommendation for this location isn\'t implemented yet.'
         return
       else
-        res.send 'Unknown location request... try RUMNEY'
+        #res.send 'Unknown location request... try RUMNEY'
         return
 
     res.send 'Fetching climbing conditions for: ' + location.name
