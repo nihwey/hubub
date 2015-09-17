@@ -111,10 +111,7 @@ module.exports = (robot) ->
         #res.send 'Unknown location request... try RUMNEY'
         return
 
-    res.send 'Fetching climbing conditions for: ' + location.name
-    res.send getAccuWeather(location)
-    res.send getWeatherCom(location)
-    res.send getForecastIo(location)
+    res.send 'http://hubub.herokuapp.com/climb/' + location.id
 
 
 # -- Utilities
