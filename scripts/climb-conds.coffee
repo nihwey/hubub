@@ -37,33 +37,40 @@ weatherCom = 'http://www.weather.com/weather/monthly/l/{ZIP}:4:US'
 getWeatherCom = (location) ->
   weatherCom.replace(/{ZIP}/, location.zip)
 
- # Forecast.io
-forecastIo =
+# Forecast.io
+forecastIoApi =
     'https://api.forecast.io/forecast/30059f5ccc521da2292979482d428572/{LATLNG}'
+
+forecastIoLines = 'http://forecast.io/lines/?q={LATLNG}'
 
 forecastIoWidget =
     '<iframe id="forecast_embed" type="text/html" ' +
     'frameborder="0" height="245" width="100%" ' +
     'src="http://forecast.io/embed/#lat={LAT}&lon={LNG}&name={NAME}">' +
     '</iframe>'
+forecastIoPage =
+    '<iframe id="forecast_embed_page" type="text/html" ' +
+    'frameborder="0" width="100%" ' +
+    'src="http://forecast.io/lines/?q={LATLNG}>' +
+    '</iframe>'
 
 # Gets weather recommendation from the forecast.io API.
 #   {Object} location
 getForecastIo = (location) ->
-  forecastIo.replace(/{LATLNG}/, location.latlng)
+  #forecastIoApi.replace(/{LATLNG}/, location.latlng)
+  forecastIoLines.replace(/{LATLNG}/, location.latlng)
 
 # Establish a fixed endpoint at /climb/<location_id>
 makeEndpointForLocation = (robot, location) ->
-  @name = location.name
-  @lat = location.latlng.split(',')[0]
-  @lng = location.latlng.split(',')[1]
+  @location = location
+  @latlng = location.latlng.split(',')
 
   callback = (req, res) ->
     res.set 'Content-Type', 'text/html'
     res.send forecastIoWidget
-        .replace(/{NAME}/, @name)
-        .replace(/{LAT}/, @lat)
-        .replace(/{LNG}/, @lng)
+        .replace(/{NAME}/, @location.name)
+        .replace(/{LAT}/, @latlng[0])
+        .replace(/{LNG}/, @latlng[1])
 
   robot.logger.info 'Making endpoint /climb/' + location.id
   robot.router.post '/climb/' + location.id, callback
@@ -95,8 +102,7 @@ module.exports = (robot) ->
     res.send 'Fetching climbing conditions for: ' + location.name
     res.send getAccuWeather(location)
     res.send getWeatherCom(location)
-    # TODO: Re-enable when this is ready.
-    #res.send getForecastIo(location)
+    res.send getForecastIo(location)
 
 
 # -- Utilities
